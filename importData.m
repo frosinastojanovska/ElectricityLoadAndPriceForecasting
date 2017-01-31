@@ -15,10 +15,10 @@ sheetname = 'ISO data';
 yr = 2012;
 
 % Import data for 2012
-NEData = dataset('XLSFile', sprintf('%s\\2012_smd_hourly.xls',folder), 'Sheet', sheetname);
+data = dataset('XLSFile', sprintf('%s\\2012_smd_hourly.xls',folder), 'Sheet', sheetname);
 
 % Add a column 'Year'
-NEData.Year = 2012 * ones(length(NEData),1);
+data.Year = 2012 * ones(length(data),1);
     
 % Import data for other years
 for yr = 2013:2014
@@ -30,12 +30,12 @@ for yr = 2013:2014
     x.Year = yr*ones(length(x),1);
     
     % Concatenate the datasets together
-    NEData = [NEData; x];
+    data = [data; x];
 end
 
 % Calculate numeric date
-%NEData.NumDate = datenum(NEData.DateTime, 'mm/dd/yyyy') + (NEData.Hour-1)/24;
+%data.NumDate = datenum(data.DateTime, 'mm/dd/yyyy') + (data.Hour-1)/24;
 
 folder = 'Load\\Data\\';
 
-save([folder genvarname(sheetname) '.mat'], 'NEData');
+save([folder genvarname(sheetname) '.mat'], 'data');
