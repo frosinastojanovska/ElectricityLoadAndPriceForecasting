@@ -1,0 +1,186 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      --><title>Predictor Comparison</title><meta name="generator" content="MATLAB 7.10"><meta name="date" content="2010-06-10"><meta name="m-file" content="comparePredictors"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h1>Predictor Comparison</h1><!--introduction--><p>This script analyzes the predictive power of different sets of predictors on day-ahead electricity price forecasting</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Import data and generate all predictors</a></li><li><a href="#2">Load pre-trained networks</a></li><li><a href="#3">Baseline performance with all predictors</a></li><li><a href="#4">Price, Load &amp; Fuel</a></li><li><a href="#5">No Load Information</a></li><li><a href="#6">No Current Load Information</a></li></ul></div><h2>Import data and generate all predictors<a name="1"></a></h2><h2>Load pre-trained networks<a name="2"></a></h2><h2>Baseline performance with all predictors<a name="3"></a></h2><p>Compute performance of best neural network with all predictors</p><h2>Price, Load &amp; Fuel<a name="4"></a></h2><p>Do the hour, weekday, holiday and temperature variables provide any predictive power when the load is known?</p><pre class="codeoutput">Selected Predictors:
+CurrentLoad          
+PrevWeekSameHourLoad 
+prevDaySameHourLoad  
+prev24HrAveLoad      
+PrevWeekSameHourPrice
+prevDaySameHourPrice 
+prev24HrAvePrice     
+prevDayNGPrice       
+prevWeekAveNGPrice   
+
+Baseline error with 14 predictors: MAE = $5.21, MAPE = 6.57%
+Error with selected  9 predictors: MAE = $5.69, MAPE = 7.11%
+
+</pre><h2>No Load Information<a name="5"></a></h2><p>How accurate is the prediction if the load information is not known?</p><pre class="codeoutput">Selected Predictors:
+DryBulb              
+DewPoint             
+Hour                 
+Weekday              
+IsWorkingDay         
+PrevWeekSameHourPrice
+prevDaySameHourPrice 
+prev24HrAvePrice     
+prevDayNGPrice       
+prevWeekAveNGPrice   
+
+Baseline error with 14 predictors: MAE = $5.21, MAPE = 6.57%
+Error with selected 10 predictors: MAE = $5.98, MAPE = 7.31%
+
+</pre><h2>No Current Load Information<a name="6"></a></h2><p>How accurate is the prediction if the real-time load is not known?</p><pre class="codeoutput">Selected Predictors:
+DryBulb              
+DewPoint             
+Hour                 
+Weekday              
+IsWorkingDay         
+PrevWeekSameHourLoad 
+prevDaySameHourLoad  
+prev24HrAveLoad      
+PrevWeekSameHourPrice
+prevDaySameHourPrice 
+prev24HrAvePrice     
+prevDayNGPrice       
+prevWeekAveNGPrice   
+
+Baseline error with 14 predictors: MAE = $5.21, MAPE = 6.57%
+Error with selected 13 predictors: MAE = $5.70, MAPE = 7.15%
+
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.10<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Predictor Comparison
+% This script analyzes the predictive power of different sets of predictors
+% on day-ahead electricity price forecasting
+
+%% Import data and generate all predictors
+
+% Fetch price data
+data = fetchDBPriceData('2004-01-01', '2008-12-31');
+
+% Import holidays
+[num, text] = xlsread('..\Data\Holidays.xls');
+holidays = text(2:end,1);
+
+% Create predictors
+term = 'short';
+[X, dates, labels] = genPredictors(data, term, holidays);
+
+% Interpolate missing values
+ind = data.ElecPrice==0;
+data.ElecPrice(ind) = interp1(find(~ind), data.ElecPrice(~ind), find(ind));
+
+% Create training set
+trainInd = data.NumDate < datenum('2008-01-01');
+trainX = X(trainInd,:);
+trainY = data.ElecPrice(trainInd);
+
+% Create test set and save for later
+testInd = data.NumDate >= datenum('2008-01-01');
+testX = X(testInd,:);
+testY = data.ElecPrice(testInd);
+testDates = dates(testInd);
+
+clear X data trainInd testInd term holidays dates ans num text
+
+%% Load pre-trained networks
+load Models\SubsetNets
+
+%% Baseline performance with all predictors
+% Compute performance of best neural network with all predictors
+load Models\NNModel
+forecastPrice = sim(net, testX')';
+err = testY-forecastPrice;
+errpct = abs(err)./testY*100;
+baselineErr = [mean(abs(err)) mean(errpct)];
+
+%% Price, Load & Fuel
+% Do the hour, weekday, holiday and temperature variables provide any
+% predictive power when the load is known?
+ind = 6:length(labels);
+disp('Selected Predictors:')
+disp(char(labels(ind)'));
+[subsetErr(1,:), nets{1}] = trainAndTestNN(trainX, trainY, testX, testY, ind, nets{1}, baselineErr);
+save Models\SubsetNets nets
+
+%% No Load Information 
+% How accurate is the prediction if the load information is not known?
+ind = [1:5 10:14];
+disp('Selected Predictors:')
+disp(char(labels(ind)'))
+[subsetErr(2,:), nets{2}] = trainAndTestNN(trainX, trainY, testX, testY, ind, nets{2}, baselineErr);
+save Models\SubsetNets nets
+
+%% No Current Load Information 
+% How accurate is the prediction if the real-time load is not known?
+ind = [1:5 7:14];
+disp('Selected Predictors:')
+disp(char(labels(ind)'))
+[subsetErr(3,:), nets{3}] = trainAndTestNN(trainX, trainY, testX, testY, ind, nets{3}, baselineErr);
+save Models\SubsetNets nets
+
+##### SOURCE END #####
+--></body></html>

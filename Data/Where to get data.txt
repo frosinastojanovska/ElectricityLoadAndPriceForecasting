@@ -1,0 +1,9 @@
+The data used in this application was obtained from ISO New England (www.iso-ne.com). At the time of writing these were the direct links to the data files
+
+Zonal hourly data (Excel Spreadsheets)
+http://iso-ne.com/markets/hstdata/znl_info/hourly/index.html
+
+System Loads in EEI format
+http://iso-ne.com/markets/hstdata/hourly/syslds_eei/index.html
+
+The data can be read in to MATLAB from the Excel spreadsheets using the script importData in the main folder
