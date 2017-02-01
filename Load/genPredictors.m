@@ -41,13 +41,12 @@ end
 
 % Short term forecasting inputs
 % Lagged load inputs
-load = double(data(1:end-24, 4));
+load = double(data(1:end-24, 6));
 nan = NaN(24,1);
 prevDaySameHourLoad = [ nan; load];
-%prevDaySameHourLoad = dataset(prevDaySameHourLoad);
-%prevWeekSameHourLoad = [NaN(168,1); data(1:end-168, 4)];
-%prev24HrAveLoad = filter(ones(1,24)/24, 1, data(:, 4));
-%%prev24HrAveLoad = filter(ones(1,24)/24, 1, [NaN(24,1); data.SYSLoad(1:end-24)]);
+prevWeekSameHourLoad = [NaN(168,1); double(data(1:end-168, 6))];
+%prevWeekSameHourLoad = [NaN(168,1); double(data(1:end-168, 6))];
+prev24HrAveLoad = filter(ones(1,24)/24, 1, double(data(:, 6)));
 
 % Date predictors
 dayOfWeek = weekday(dates);
@@ -57,14 +56,14 @@ isWorkingDay = ~ismember(floor(dates),holidays) & ~ismember(dayOfWeek,[1 7]);
 %[~,~,isWorkingDay] = createHolidayDates(data.NumDate);
 
 
-if strncmpi(term, 'long', 4);
+if strncmpi(term, 'long', 4)
     % Long Term Forecast Predictors
-    X = [data(:, 5) data(:, 6) daily5dayHighAve daily5dayLowAve data.Hour dayOfWeek isWorkingDay];
+    X = [data(:, 4) data(:, 5) daily5dayHighAve daily5dayLowAve data.Hour dayOfWeek isWorkingDay];
     labels = {'DryBulb', 'DewPoint', 'Prev5DayHighAve', 'Prev5DayLowAve', 'Hour', 'Weekday', 'IsWorkingDay'};
 else
     % Short Term
-    X = [double(data(:, 5)) double(data(:, 6)) dayOfWeek isWorkingDay prevDaySameHourLoad];
-    labels = {'DryBulb', 'DewPoint', 'Weekday', 'IsWorkingDay', 'prevDaySameHourLoad'};
+    X = [double(data(:, 4)) double(data(:, 5)) dayOfWeek isWorkingDay prevDaySameHourLoad prev24HrAveLoad ];
+    labels = {'Temperature', 'DewPoint', 'Weekday', 'IsWorkingDay', 'prevDaySameHourLoad', 'prev24HrAveLoad'};
 end
 
 
