@@ -22,7 +22,7 @@ function [X, dates, labels] = genPredictors(data, term, holidays)
 
 % Convert Dates into a Numeric Representation
 try
-    dates = data.NumDate;
+    dates = data.DateTime;
 catch %#ok<CTCH>
     dates = datenum(data.Date, 'yyyy-mm-dd HH:MM:SS') + (data.Hour-1)/24;
 end
@@ -41,10 +41,10 @@ end
 
 % Short term forecasting inputs
 % Lagged load inputs
-prevDaySameHourLoad = [NaN(24,1); data.SYSLoad(1:end-24)];
-prevWeekSameHourLoad = [NaN(168,1); data.SYSLoad(1:end-168)];
-prev24HrAveLoad = filter(ones(1,24)/24, 1, data.SYSLoad);
-%prev24HrAveLoad = filter(ones(1,24)/24, 1, [NaN(24,1); data.SYSLoad(1:end-24)]);
+%prevDaySameHourLoad = [NaN(24,1); data(1:end-24, 4)];
+%prevWeekSameHourLoad = [NaN(168,1); data(1:end-168, 4)];
+%prev24HrAveLoad = filter(ones(1,24)/24, 1, data(:, 4));
+%%prev24HrAveLoad = filter(ones(1,24)/24, 1, [NaN(24,1); data.SYSLoad(1:end-24)]);
 
 % Date predictors
 dayOfWeek = weekday(dates);
@@ -56,12 +56,12 @@ isWorkingDay = ~ismember(floor(dates),holidays) & ~ismember(dayOfWeek,[1 7]);
 
 if strncmpi(term, 'long', 4);
     % Long Term Forecast Predictors
-    X = [data.DryBulb data.DewPnt daily5dayHighAve daily5dayLowAve data.Hour dayOfWeek isWorkingDay];
+    X = [data(:, 5) data(:, 6) daily5dayHighAve daily5dayLowAve data.Hour dayOfWeek isWorkingDay];
     labels = {'DryBulb', 'DewPoint', 'Prev5DayHighAve', 'Prev5DayLowAve', 'Hour', 'Weekday', 'IsWorkingDay'};
 else
     % Short Term
-    X = [data.DryBulb data.DewPnt data.Hour dayOfWeek isWorkingDay prevWeekSameHourLoad prevDaySameHourLoad prev24HrAveLoad];
-    labels = {'DryBulb', 'DewPoint', 'Hour', 'Weekday', 'IsWorkingDay', 'PrevWeekSameHourLoad', 'prevDaySameHourLoad', 'prev24HrAveLoad'};
+    X = [data(:, 5) data(:, 6) dayOfWeek isWorkingDay prevWeekSameHourLoad prevDaySameHourLoad prev24HrAveLoad];
+    labels = {'DryBulb', 'DewPoint', 'Weekday', 'IsWorkingDay', 'PrevWeekSameHourLoad', 'prevDaySameHourLoad', 'prev24HrAveLoad'};
 end
 
 

@@ -19,7 +19,7 @@ addpath ..\Util
 % imported from an Excel spreadsheet
 
 [num, text] = xlsread('..\Data\Holidays.xls'); 
-holidays = num;
+holidays = text(2:end,1);
 
 
 %% Generate Predictor Matrix
@@ -41,7 +41,7 @@ holidays = num;
 % specified as an average or a distribution
 
 % Select forecast horizon
-term = 'short';
+term = 'long';
 
 [X, dates, labels] = genPredictors(data, term, holidays);
 

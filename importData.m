@@ -34,7 +34,7 @@ for yr = 2013:2014
 end
 
 % Calculate numeric date
-%data.NumDate = datenum(data.DateTime, 'mm/dd/yyyy') + (data.Hour-1)/24;
+data.NumDate = datenum(data.DateTime, 'dd.mm.yyyy HH:MM:SS');
 
 folder = 'Load\\Data\\';
 
