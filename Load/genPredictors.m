@@ -44,7 +44,6 @@ end
 load = double(data(1:end-24, 6));
 nan = NaN(24,1);
 prevDaySameHourLoad = [ nan; load];
-prevWeekSameHourLoad = [NaN(168,1); double(data(1:end-168, 6))];
 %prevWeekSameHourLoad = [NaN(168,1); double(data(1:end-168, 6))];
 prev24HrAveLoad = filter(ones(1,24)/24, 1, double(data(:, 6)));
 

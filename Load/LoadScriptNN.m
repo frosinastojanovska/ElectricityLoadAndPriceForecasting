@@ -58,12 +58,12 @@ trainingPercent = round(size * 0.8);    %calculating 80%
 testingPercent = size - trainingPercent;
 trainInd = rand_indices(1:trainingPercent);
 trainX = X(trainInd,:);
-trainY = double(data(trainInd,4));
+trainY = double(data(trainInd,6));
 
 % Create test set and save for later
 testInd = rand_indices(trainingPercent:size);
 testX = X(testInd,:);
-testY = double(data(testInd,4));
+testY = double(data(testInd,6));
 testDates = dates(testInd);
 
 save Data\testSet testDates testX testY
