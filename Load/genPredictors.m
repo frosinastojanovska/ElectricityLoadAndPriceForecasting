@@ -41,7 +41,10 @@ end
 
 % Short term forecasting inputs
 % Lagged load inputs
-%prevDaySameHourLoad = [NaN(24,1); data(1:end-24, 4)];
+load = double(data(1:end-24, 4));
+nan = NaN(24,1);
+prevDaySameHourLoad = [ nan; load];
+%prevDaySameHourLoad = dataset(prevDaySameHourLoad);
 %prevWeekSameHourLoad = [NaN(168,1); data(1:end-168, 4)];
 %prev24HrAveLoad = filter(ones(1,24)/24, 1, data(:, 4));
 %%prev24HrAveLoad = filter(ones(1,24)/24, 1, [NaN(24,1); data.SYSLoad(1:end-24)]);
@@ -60,8 +63,8 @@ if strncmpi(term, 'long', 4);
     labels = {'DryBulb', 'DewPoint', 'Prev5DayHighAve', 'Prev5DayLowAve', 'Hour', 'Weekday', 'IsWorkingDay'};
 else
     % Short Term
-    X = [data(:, 5) data(:, 6) dayOfWeek isWorkingDay prevWeekSameHourLoad prevDaySameHourLoad prev24HrAveLoad];
-    labels = {'DryBulb', 'DewPoint', 'Weekday', 'IsWorkingDay', 'PrevWeekSameHourLoad', 'prevDaySameHourLoad', 'prev24HrAveLoad'};
+    X = [double(data(:, 5)) double(data(:, 6)) dayOfWeek isWorkingDay prevDaySameHourLoad];
+    labels = {'DryBulb', 'DewPoint', 'Weekday', 'IsWorkingDay', 'prevDaySameHourLoad'};
 end
 
 

@@ -58,15 +58,16 @@ trainingPercent = round(size * 0.8);    %calculating 80%
 testingPercent = size - trainingPercent;
 trainInd = rand_indices(1:trainingPercent);
 trainX = X(trainInd,:);
-trainY = data(trainInd,4);
+trainY = double(data(trainInd,4));
 
 % Create test set and save for later
-testInd = rand_indices(trainingPercent:testingPercent);
+testInd = rand_indices(trainingPercent:size);
 testX = X(testInd,:);
-testY = data(testInd,4);
+testY = double(data(testInd,4));
 testDates = dates(testInd);
 
 save Data\testSet testDates testX testY
+save Data\trainSet trainX trainY
 clear X data trainInd testInd term holidays dates ans num text
 
 %% Build the Load Forecasting Model
@@ -108,15 +109,15 @@ fitPlot(testDates, [testY forecastLoad], err);
 
 errpct = abs(err)./testY*100;
 
-fL = reshape(forecastLoad, 24, length(forecastLoad)/24)';
-tY = reshape(testY, 24, length(testY)/24)';
-peakerrpct = abs(max(tY,[],2) - max(fL,[],2))./max(tY,[],2) * 100;
+%fL = reshape(forecastLoad, 24, int16(length(forecastLoad)/24))';
+%tY = reshape(testY, 24, int16(length(testY)/24))';
+%peakerrpct = abs(max(tY,[],2) - max(fL,[],2))./max(tY,[],2) * 100;
 
 MAE = mean(abs(err));
 MAPE = mean(errpct(~isinf(errpct)));
 
-fprintf('Mean Absolute Percent Error (MAPE): %0.2f%% \nMean Absolute Error (MAE): %0.2f MWh\nDaily Peak MAPE: %0.2f%%\n',...
-    MAPE, MAE, mean(peakerrpct))
+fprintf('Mean Absolute Percent Error (MAPE): %0.2f%% \nMean Absolute Error (MAE): %0.2f MWh\n',...
+    MAPE, MAE)
 
 
 %% Examine Distribution of Errors
